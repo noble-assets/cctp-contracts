@@ -1,5 +1,6 @@
 pragma solidity 0.7.6;
 
+import "evm-cctp-contracts/src/interfaces/IMessageTransmitter.sol";
 import "evm-cctp-contracts/src/TokenMessenger.sol";
 
 /**
@@ -10,14 +11,34 @@ import "evm-cctp-contracts/src/TokenMessenger.sol";
  */
 contract TokenMessengerWithMetadata {
     // ============ Events ============
-    event DepositForBurnMetadata(uint64 indexed nonce, string metadata);
+    event DepositForBurnMetadata(
+        uint64 indexed nonce, uint64 indexed metadataNonce, bytes metadata
+    );
 
     // ============ State Variables ============
     TokenMessenger public tokenMessenger;
+    IMessageTransmitter public messageTransmitter;
+
+    uint32 public immutable domainNumber;
+    bytes32 public immutable domainRecipient;
 
     // ============ Constructor ============
-    constructor(address _tokenMessenger) {
+    /**
+     * @param _tokenMessenger Token messenger address
+     * @param _domainNumber Noble's domain number
+     * @param _domainRecipient Noble's domain recipient
+     */
+    constructor(
+        address _tokenMessenger,
+        uint32 _domainNumber,
+        bytes32 _domainRecipient
+    ) {
+        require(_tokenMessenger != address(0), "TokenMessenger not set");
         tokenMessenger = TokenMessenger(_tokenMessenger);
+        messageTransmitter = tokenMessenger.localMessageTransmitter();
+
+        domainNumber = _domainNumber;
+        domainRecipient = _domainRecipient;
     }
 
     // ============ External Functions  ============
@@ -28,17 +49,21 @@ contract TokenMessengerWithMetadata {
      * @return nonce unique nonce reserved by message
      */
     function depositForBurn(
-        string calldata metadata,
+        bytes calldata metadata,
         uint256 amount,
-        uint32 destinationDomain,
         bytes32 mintRecipient,
         address burnToken
     ) external returns (uint64 nonce) {
         nonce = tokenMessenger.depositForBurn(
-            amount, destinationDomain, mintRecipient, burnToken
+            amount, domainNumber, mintRecipient, burnToken
         );
 
-        emit DepositForBurnMetadata(nonce, metadata);
+        bytes memory message = abi.encodePacked(nonce, metadata);
+        uint64 metadataNonce = messageTransmitter.sendMessage(
+            domainNumber, domainRecipient, message
+        );
+
+        emit DepositForBurnMetadata(nonce, metadataNonce, metadata);
     }
 
     /**
@@ -48,23 +73,21 @@ contract TokenMessengerWithMetadata {
      * @return nonce unique nonce reserved by message
      */
     function depositForBurnWithCaller(
-        string calldata metadata,
+        bytes calldata metadata,
         uint256 amount,
-        uint32 destinationDomain,
         bytes32 mintRecipient,
         address burnToken,
         bytes32 destinationCaller
     ) external returns (uint64 nonce) {
         nonce = tokenMessenger.depositForBurnWithCaller(
-            amount,
-            destinationDomain,
-            mintRecipient,
-            burnToken,
-            destinationCaller
+            amount, domainNumber, mintRecipient, burnToken, destinationCaller
         );
 
-        emit DepositForBurnMetadata(nonce, metadata);
-    }
+        bytes memory message = abi.encodePacked(nonce, metadata);
+        uint64 metadataNonce = messageTransmitter.sendMessageWithCaller(
+            domainNumber, domainRecipient, destinationCaller, message
+        );
 
-    // TODO: Should we also wrap replaceDepositForBurn?
+        emit DepositForBurnMetadata(nonce, metadataNonce, metadata);
+    }
 }
