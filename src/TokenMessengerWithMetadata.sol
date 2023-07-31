@@ -1,6 +1,7 @@
 pragma solidity 0.7.6;
 
 import "evm-cctp-contracts/src/interfaces/IMessageTransmitter.sol";
+import "evm-cctp-contracts/src/interfaces/IMintBurnToken.sol";
 import "evm-cctp-contracts/src/TokenMessenger.sol";
 
 /**
@@ -54,6 +55,16 @@ contract TokenMessengerWithMetadata {
         bytes32 mintRecipient,
         address burnToken
     ) external returns (uint64 nonce) {
+        IMintBurnToken token = IMintBurnToken(burnToken);
+        require(
+            token.transferFrom(msg.sender, address(this), amount),
+            "Transfer operation failed"
+        );
+        require(
+            token.approve(address(tokenMessenger), amount),
+            "Approve operation failed"
+        );
+
         nonce = tokenMessenger.depositForBurn(
             amount, domainNumber, mintRecipient, burnToken
         );
@@ -79,6 +90,16 @@ contract TokenMessengerWithMetadata {
         address burnToken,
         bytes32 destinationCaller
     ) external returns (uint64 nonce) {
+        IMintBurnToken token = IMintBurnToken(burnToken);
+        require(
+            token.transferFrom(msg.sender, address(this), amount),
+            "Transfer operation failed"
+        );
+        require(
+            token.approve(address(tokenMessenger), amount),
+            "Approve operation failed"
+        );
+
         nonce = tokenMessenger.depositForBurnWithCaller(
             amount, domainNumber, mintRecipient, burnToken, destinationCaller
         );
