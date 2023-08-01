@@ -42,7 +42,7 @@ contract TokenMessengerWithMetadata {
         domainRecipient = _domainRecipient;
     }
 
-    // ============ External Functions  ============
+    // ============ External Functions ============
     /**
      * @notice Wrapper function for "depositForBurn" that includes metadata.
      * Emits a `DepositForBurnMetadata` event.
