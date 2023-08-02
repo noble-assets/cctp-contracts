@@ -2,6 +2,7 @@ pragma solidity 0.7.6;
 
 import "evm-cctp-contracts/src/interfaces/IMessageTransmitter.sol";
 import "evm-cctp-contracts/src/interfaces/IMintBurnToken.sol";
+import "evm-cctp-contracts/src/messages/Message.sol";
 import "evm-cctp-contracts/src/TokenMessenger.sol";
 
 /**
@@ -85,7 +86,8 @@ contract TokenMessengerWithMetadata {
             amount, domainNumber, mintRecipient, burnToken
         );
 
-        bytes memory message = abi.encodePacked(nonce, metadata);
+        bytes32 sender = Message.addressToBytes32(msg.sender);
+        bytes memory message = abi.encodePacked(nonce, sender, metadata);
         uint64 metadataNonce = messageTransmitter.sendMessage(
             domainNumber, domainRecipient, message
         );
@@ -139,7 +141,8 @@ contract TokenMessengerWithMetadata {
             amount, domainNumber, mintRecipient, burnToken, destinationCaller
         );
 
-        bytes memory message = abi.encodePacked(nonce, metadata);
+        bytes32 sender = Message.addressToBytes32(msg.sender);
+        bytes memory message = abi.encodePacked(nonce, sender, metadata);
         uint64 metadataNonce = messageTransmitter.sendMessageWithCaller(
             domainNumber, domainRecipient, destinationCaller, message
         );
