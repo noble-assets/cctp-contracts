@@ -56,14 +56,8 @@ contract TokenMessengerWithMetadata {
         address burnToken
     ) external returns (uint64 nonce) {
         IMintBurnToken token = IMintBurnToken(burnToken);
-        require(
-            token.transferFrom(msg.sender, address(this), amount),
-            "Transfer operation failed"
-        );
-        require(
-            token.approve(address(tokenMessenger), amount),
-            "Approve operation failed"
-        );
+        token.transferFrom(msg.sender, address(this), amount);
+        token.approve(address(tokenMessenger), amount);
 
         nonce = tokenMessenger.depositForBurn(
             amount, domainNumber, mintRecipient, burnToken
@@ -91,14 +85,8 @@ contract TokenMessengerWithMetadata {
         bytes32 destinationCaller
     ) external returns (uint64 nonce) {
         IMintBurnToken token = IMintBurnToken(burnToken);
-        require(
-            token.transferFrom(msg.sender, address(this), amount),
-            "Transfer operation failed"
-        );
-        require(
-            token.approve(address(tokenMessenger), amount),
-            "Approve operation failed"
-        );
+        token.transferFrom(msg.sender, address(this), amount);
+        token.approve(address(tokenMessenger), amount);
 
         nonce = tokenMessenger.depositForBurnWithCaller(
             amount, domainNumber, mintRecipient, burnToken, destinationCaller

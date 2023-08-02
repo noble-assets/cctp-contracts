@@ -92,4 +92,32 @@ contract TokenMessengerWithMetadataTest is Test, TestUtils {
             metadata, _amount, _mintRecipientRaw, address(token)
         );
     }
+
+    function testDepositForBurnWithCaller_succeeds(
+        uint256 _amount,
+        address _mintRecipient
+    ) public {
+        _amount = bound(_amount, 1, ALLOWED_BURN_AMOUNT);
+
+        vm.assume(_mintRecipient != address(0));
+        bytes32 _mintRecipientRaw = Message.addressToBytes32(_mintRecipient);
+
+        bytes memory metadata = "";
+
+        //
+        token.mint(owner, _amount * 2);
+
+        vm.prank(owner);
+        token.approve(address(tokenMessengerWrapper), _amount);
+
+        //
+        vm.prank(owner);
+        tokenMessengerWrapper.depositForBurnWithCaller(
+            metadata,
+            _amount,
+            _mintRecipientRaw,
+            address(token),
+            destinationCaller
+        );
+    }
 }
