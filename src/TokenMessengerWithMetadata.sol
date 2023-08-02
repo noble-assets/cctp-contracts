@@ -46,15 +46,37 @@ contract TokenMessengerWithMetadata {
     /**
      * @notice Wrapper function for "depositForBurn" that includes metadata.
      * Emits a `DepositForBurnMetadata` event.
-     * @param metadata custom metadata to be included with transfer
+     * @param channel channel id to be used when forwarding
+     * @param port port id to be used when forwarding
+     * @param destinationRecipient address of recipient once forwarded
      * @return nonce unique nonce reserved by message
      */
     function depositForBurn(
-        bytes calldata metadata,
+        uint64 channel,
+        bytes calldata port,
+        bytes32 destinationRecipient,
         uint256 amount,
         bytes32 mintRecipient,
         address burnToken
     ) external returns (uint64 nonce) {
+        bytes memory metadata =
+            abi.encodePacked(destinationRecipient, channel, port);
+
+        return rawDepositForBurn(metadata, amount, mintRecipient, burnToken);
+    }
+
+    /**
+     * @notice Wrapper function for "depositForBurn" that includes metadata.
+     * Emits a `DepositForBurnMetadata` event.
+     * @param metadata custom metadata to be included with transfer
+     * @return nonce unique nonce reserved by message
+     */
+    function rawDepositForBurn(
+        bytes memory metadata,
+        uint256 amount,
+        bytes32 mintRecipient,
+        address burnToken
+    ) public returns (uint64 nonce) {
         IMintBurnToken token = IMintBurnToken(burnToken);
         token.transferFrom(msg.sender, address(this), amount);
         token.approve(address(tokenMessenger), amount);
@@ -74,16 +96,41 @@ contract TokenMessengerWithMetadata {
     /**
      * @notice Wrapper function for "depositForBurnWithCaller" that includes metadata.
      * Emits a `DepositForBurnMetadata` event.
-     * @param metadata custom metadata to be included with transfer
+     * @param channel channel id to be used when forwarding
+     * @param port port id to be used when forwarding
+     * @param destinationRecipient address of recipient once forwarded
      * @return nonce unique nonce reserved by message
      */
     function depositForBurnWithCaller(
-        bytes calldata metadata,
+        uint64 channel,
+        bytes calldata port,
+        bytes32 destinationRecipient,
         uint256 amount,
         bytes32 mintRecipient,
         address burnToken,
         bytes32 destinationCaller
     ) external returns (uint64 nonce) {
+        bytes memory metadata =
+            abi.encodePacked(destinationRecipient, channel, port);
+
+        return rawDepositForBurnWithCaller(
+            metadata, amount, mintRecipient, burnToken, destinationCaller
+        );
+    }
+
+    /**
+     * @notice Wrapper function for "depositForBurnWithCaller" that includes metadata.
+     * Emits a `DepositForBurnMetadata` event.
+     * @param metadata custom metadata to be included with transfer
+     * @return nonce unique nonce reserved by message
+     */
+    function rawDepositForBurnWithCaller(
+        bytes memory metadata,
+        uint256 amount,
+        bytes32 mintRecipient,
+        address burnToken,
+        bytes32 destinationCaller
+    ) public returns (uint64 nonce) {
         IMintBurnToken token = IMintBurnToken(burnToken);
         token.transferFrom(msg.sender, address(this), amount);
         token.approve(address(tokenMessenger), amount);

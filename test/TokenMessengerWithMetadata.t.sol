@@ -88,7 +88,7 @@ contract TokenMessengerWithMetadataTest is Test, TestUtils {
 
         //
         vm.prank(owner);
-        tokenMessengerWrapper.depositForBurn(
+        tokenMessengerWrapper.rawDepositForBurn(
             metadata, _amount, _mintRecipientRaw, address(token)
         );
     }
@@ -112,7 +112,7 @@ contract TokenMessengerWithMetadataTest is Test, TestUtils {
 
         //
         vm.prank(owner);
-        tokenMessengerWrapper.depositForBurnWithCaller(
+        tokenMessengerWrapper.rawDepositForBurnWithCaller(
             metadata,
             _amount,
             _mintRecipientRaw,
