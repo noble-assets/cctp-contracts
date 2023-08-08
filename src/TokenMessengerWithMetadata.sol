@@ -54,15 +54,15 @@ contract TokenMessengerWithMetadata {
     function depositForBurn(
         uint64 channel,
         bytes32 destinationRecipient,
-        bytes calldata memo,
         uint256 amount,
         bytes32 mintRecipient,
-        address burnToken
+        address burnToken,
+        bytes calldata memo
     ) external returns (uint64 nonce) {
         bytes memory metadata =
             abi.encodePacked(channel, destinationRecipient, memo);
 
-        return rawDepositForBurn(metadata, amount, mintRecipient, burnToken);
+        return rawDepositForBurn(amount, mintRecipient, burnToken, metadata);
     }
 
     /**
@@ -72,10 +72,10 @@ contract TokenMessengerWithMetadata {
      * @return nonce unique nonce reserved by message
      */
     function rawDepositForBurn(
-        bytes memory metadata,
         uint256 amount,
         bytes32 mintRecipient,
-        address burnToken
+        address burnToken,
+        bytes memory metadata
     ) public returns (uint64 nonce) {
         IMintBurnToken token = IMintBurnToken(burnToken);
         token.transferFrom(msg.sender, address(this), amount);
@@ -104,17 +104,17 @@ contract TokenMessengerWithMetadata {
     function depositForBurnWithCaller(
         uint64 channel,
         bytes32 destinationRecipient,
-        bytes calldata memo,
         uint256 amount,
         bytes32 mintRecipient,
         address burnToken,
-        bytes32 destinationCaller
+        bytes32 destinationCaller,
+        bytes calldata memo
     ) external returns (uint64 nonce) {
         bytes memory metadata =
             abi.encodePacked(channel, destinationRecipient, memo);
 
         return rawDepositForBurnWithCaller(
-            metadata, amount, mintRecipient, burnToken, destinationCaller
+            amount, mintRecipient, burnToken, destinationCaller, metadata
         );
     }
 
@@ -125,11 +125,11 @@ contract TokenMessengerWithMetadata {
      * @return nonce unique nonce reserved by message
      */
     function rawDepositForBurnWithCaller(
-        bytes memory metadata,
         uint256 amount,
         bytes32 mintRecipient,
         address burnToken,
-        bytes32 destinationCaller
+        bytes32 destinationCaller,
+        bytes memory metadata
     ) public returns (uint64 nonce) {
         IMintBurnToken token = IMintBurnToken(burnToken);
         token.transferFrom(msg.sender, address(this), amount);
