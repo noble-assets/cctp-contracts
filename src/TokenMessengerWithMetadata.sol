@@ -1,6 +1,7 @@
 pragma solidity 0.7.6;
 
 import "evm-cctp-contracts/src/interfaces/IMessageTransmitter.sol";
+import "evm-cctp-contracts/src/interfaces/IMintBurnToken.sol";
 import "evm-cctp-contracts/src/TokenMessenger.sol";
 
 /**
@@ -41,7 +42,7 @@ contract TokenMessengerWithMetadata {
         domainRecipient = _domainRecipient;
     }
 
-    // ============ External Functions  ============
+    // ============ External Functions ============
     /**
      * @notice Wrapper function for "depositForBurn" that includes metadata.
      * Emits a `DepositForBurnMetadata` event.
@@ -54,6 +55,10 @@ contract TokenMessengerWithMetadata {
         bytes32 mintRecipient,
         address burnToken
     ) external returns (uint64 nonce) {
+        IMintBurnToken token = IMintBurnToken(burnToken);
+        token.transferFrom(msg.sender, address(this), amount);
+        token.approve(address(tokenMessenger), amount);
+
         nonce = tokenMessenger.depositForBurn(
             amount, domainNumber, mintRecipient, burnToken
         );
@@ -79,6 +84,10 @@ contract TokenMessengerWithMetadata {
         address burnToken,
         bytes32 destinationCaller
     ) external returns (uint64 nonce) {
+        IMintBurnToken token = IMintBurnToken(burnToken);
+        token.transferFrom(msg.sender, address(this), amount);
+        token.approve(address(tokenMessenger), amount);
+
         nonce = tokenMessenger.depositForBurnWithCaller(
             amount, domainNumber, mintRecipient, burnToken, destinationCaller
         );
