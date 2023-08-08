@@ -47,20 +47,20 @@ contract TokenMessengerWithMetadata {
      * @notice Wrapper function for "depositForBurn" that includes metadata.
      * Emits a `DepositForBurnMetadata` event.
      * @param channel channel id to be used when forwarding
-     * @param port port id to be used when forwarding
      * @param destinationRecipient address of recipient once forwarded
+     * @param memo arbitrary memo to be included when forwarding
      * @return nonce unique nonce reserved by message
      */
     function depositForBurn(
         uint64 channel,
-        bytes calldata port,
         bytes32 destinationRecipient,
+        bytes calldata memo,
         uint256 amount,
         bytes32 mintRecipient,
         address burnToken
     ) external returns (uint64 nonce) {
         bytes memory metadata =
-            abi.encodePacked(destinationRecipient, channel, port);
+            abi.encodePacked(channel, destinationRecipient, memo);
 
         return rawDepositForBurn(metadata, amount, mintRecipient, burnToken);
     }
@@ -97,21 +97,21 @@ contract TokenMessengerWithMetadata {
      * @notice Wrapper function for "depositForBurnWithCaller" that includes metadata.
      * Emits a `DepositForBurnMetadata` event.
      * @param channel channel id to be used when forwarding
-     * @param port port id to be used when forwarding
      * @param destinationRecipient address of recipient once forwarded
+     * @param memo arbitrary memo to be included when forwarding
      * @return nonce unique nonce reserved by message
      */
     function depositForBurnWithCaller(
         uint64 channel,
-        bytes calldata port,
         bytes32 destinationRecipient,
+        bytes calldata memo,
         uint256 amount,
         bytes32 mintRecipient,
         address burnToken,
         bytes32 destinationCaller
     ) external returns (uint64 nonce) {
         bytes memory metadata =
-            abi.encodePacked(destinationRecipient, channel, port);
+            abi.encodePacked(channel, destinationRecipient, memo);
 
         return rawDepositForBurnWithCaller(
             metadata, amount, mintRecipient, burnToken, destinationCaller
