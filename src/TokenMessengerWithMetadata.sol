@@ -47,36 +47,42 @@ contract TokenMessengerWithMetadata {
     /**
      * @notice Wrapper function for "depositForBurn" that includes metadata.
      * Emits a `DepositForBurnMetadata` event.
-     * @param channel channel id to be used when forwarding
-     * @param port port id to be used when forwarding
-     * @param destinationRecipient address of recipient once forwarded
+     * @param channel channel id to be used when ibc forwarding
+     * @param destinationRecipient address of recipient once ibc forwarded
+     * @param amount amount of tokens to burn
+     * @param mintRecipient address of mint recipient on destination domain
+     * @param burnToken address of contract to burn deposited tokens, on local domain
+     * @param memo arbitrary memo to be included when ibc forwarding
      * @return nonce unique nonce reserved by message
      */
     function depositForBurn(
         uint64 channel,
-        bytes calldata port,
         bytes32 destinationRecipient,
         uint256 amount,
         bytes32 mintRecipient,
-        address burnToken
+        address burnToken,
+        bytes calldata memo
     ) external returns (uint64 nonce) {
         bytes memory metadata =
-            abi.encodePacked(destinationRecipient, channel, port);
+            abi.encodePacked(channel, destinationRecipient, memo);
 
-        return rawDepositForBurn(metadata, amount, mintRecipient, burnToken);
+        return rawDepositForBurn(amount, mintRecipient, burnToken, metadata);
     }
 
     /**
      * @notice Wrapper function for "depositForBurn" that includes metadata.
      * Emits a `DepositForBurnMetadata` event.
+     * @param amount amount of tokens to burn
+     * @param mintRecipient address of mint recipient on destination domain
+     * @param burnToken address of contract to burn deposited tokens, on local domain
      * @param metadata custom metadata to be included with transfer
      * @return nonce unique nonce reserved by message
      */
     function rawDepositForBurn(
-        bytes memory metadata,
         uint256 amount,
         bytes32 mintRecipient,
-        address burnToken
+        address burnToken,
+        bytes memory metadata
     ) public returns (uint64 nonce) {
         IMintBurnToken token = IMintBurnToken(burnToken);
         token.transferFrom(msg.sender, address(this), amount);
@@ -98,40 +104,48 @@ contract TokenMessengerWithMetadata {
     /**
      * @notice Wrapper function for "depositForBurnWithCaller" that includes metadata.
      * Emits a `DepositForBurnMetadata` event.
-     * @param channel channel id to be used when forwarding
-     * @param port port id to be used when forwarding
-     * @param destinationRecipient address of recipient once forwarded
+     * @param channel channel id to be used when ibc forwarding
+     * @param destinationRecipient address of recipient once ibc forwarded
+     * @param amount amount of tokens to burn
+     * @param mintRecipient address of mint recipient on destination domain
+     * @param burnToken address of contract to burn deposited tokens, on local domain
+     * @param destinationCaller caller on the destination domain, as bytes32
+     * @param memo arbitrary memo to be included when ibc forwarding
      * @return nonce unique nonce reserved by message
      */
     function depositForBurnWithCaller(
         uint64 channel,
-        bytes calldata port,
         bytes32 destinationRecipient,
         uint256 amount,
         bytes32 mintRecipient,
         address burnToken,
-        bytes32 destinationCaller
+        bytes32 destinationCaller,
+        bytes calldata memo
     ) external returns (uint64 nonce) {
         bytes memory metadata =
-            abi.encodePacked(destinationRecipient, channel, port);
+            abi.encodePacked(channel, destinationRecipient, memo);
 
         return rawDepositForBurnWithCaller(
-            metadata, amount, mintRecipient, burnToken, destinationCaller
+            amount, mintRecipient, burnToken, destinationCaller, metadata
         );
     }
 
     /**
      * @notice Wrapper function for "depositForBurnWithCaller" that includes metadata.
      * Emits a `DepositForBurnMetadata` event.
+     * @param amount amount of tokens to burn
+     * @param mintRecipient address of mint recipient on destination domain
+     * @param burnToken address of contract to burn deposited tokens, on local domain
+     * @param destinationCaller caller on the destination domain, as bytes32
      * @param metadata custom metadata to be included with transfer
      * @return nonce unique nonce reserved by message
      */
     function rawDepositForBurnWithCaller(
-        bytes memory metadata,
         uint256 amount,
         bytes32 mintRecipient,
         address burnToken,
-        bytes32 destinationCaller
+        bytes32 destinationCaller,
+        bytes memory metadata
     ) public returns (uint64 nonce) {
         IMintBurnToken token = IMintBurnToken(burnToken);
         token.transferFrom(msg.sender, address(this), amount);
