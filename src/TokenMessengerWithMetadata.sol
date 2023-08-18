@@ -46,9 +46,12 @@ contract TokenMessengerWithMetadata {
     /**
      * @notice Wrapper function for "depositForBurn" that includes metadata.
      * Emits a `DepositForBurnMetadata` event.
-     * @param channel channel id to be used when forwarding
-     * @param destinationRecipient address of recipient once forwarded
-     * @param memo arbitrary memo to be included when forwarding
+     * @param channel channel id to be used when ibc forwarding
+     * @param destinationRecipient address of recipient once ibc forwarded
+     * @param amount amount of tokens to burn
+     * @param mintRecipient address of mint recipient on destination domain
+     * @param burnToken address of contract to burn deposited tokens, on local domain
+     * @param memo arbitrary memo to be included when ibc forwarding
      * @return nonce unique nonce reserved by message
      */
     function depositForBurn(
@@ -68,6 +71,9 @@ contract TokenMessengerWithMetadata {
     /**
      * @notice Wrapper function for "depositForBurn" that includes metadata.
      * Emits a `DepositForBurnMetadata` event.
+     * @param amount amount of tokens to burn
+     * @param mintRecipient address of mint recipient on destination domain
+     * @param burnToken address of contract to burn deposited tokens, on local domain
      * @param metadata custom metadata to be included with transfer
      * @return nonce unique nonce reserved by message
      */
@@ -96,9 +102,13 @@ contract TokenMessengerWithMetadata {
     /**
      * @notice Wrapper function for "depositForBurnWithCaller" that includes metadata.
      * Emits a `DepositForBurnMetadata` event.
-     * @param channel channel id to be used when forwarding
-     * @param destinationRecipient address of recipient once forwarded
-     * @param memo arbitrary memo to be included when forwarding
+     * @param channel channel id to be used when ibc forwarding
+     * @param destinationRecipient address of recipient once ibc forwarded
+     * @param amount amount of tokens to burn
+     * @param mintRecipient address of mint recipient on destination domain
+     * @param burnToken address of contract to burn deposited tokens, on local domain
+     * @param destinationCaller caller on the destination domain, as bytes32
+     * @param memo arbitrary memo to be included when ibc forwarding
      * @return nonce unique nonce reserved by message
      */
     function depositForBurnWithCaller(
@@ -121,6 +131,10 @@ contract TokenMessengerWithMetadata {
     /**
      * @notice Wrapper function for "depositForBurnWithCaller" that includes metadata.
      * Emits a `DepositForBurnMetadata` event.
+     * @param amount amount of tokens to burn
+     * @param mintRecipient address of mint recipient on destination domain
+     * @param burnToken address of contract to burn deposited tokens, on local domain
+     * @param destinationCaller caller on the destination domain, as bytes32
      * @param metadata custom metadata to be included with transfer
      * @return nonce unique nonce reserved by message
      */
