@@ -1,3 +1,4 @@
 .idea
 cache
-out
+out/*
+!out/TokenMessengerWithMetadata.sol

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.7.6;
 
 import "evm-cctp-contracts/src/interfaces/IMessageTransmitter.sol";
@@ -19,7 +20,7 @@ contract TokenMessengerWithMetadata {
 
     // ============ State Variables ============
     TokenMessenger public tokenMessenger;
-    IMessageTransmitter public messageTransmitter;
+    IMessageTransmitter public immutable messageTransmitter;
 
     uint32 public immutable domainNumber;
     bytes32 public immutable domainRecipient;
