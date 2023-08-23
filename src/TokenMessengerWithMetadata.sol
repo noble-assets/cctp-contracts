@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.7.6;
 
-import "evm-cctp-contracts/src/interfaces/IMessageTransmitter.sol";
 import "evm-cctp-contracts/src/interfaces/IMintBurnToken.sol";
 import "evm-cctp-contracts/src/messages/Message.sol";
+import "evm-cctp-contracts/src/MessageTransmitter.sol";
 import "evm-cctp-contracts/src/TokenMessenger.sol";
 
 /**
@@ -20,7 +20,7 @@ contract TokenMessengerWithMetadata {
 
     // ============ State Variables ============
     TokenMessenger public tokenMessenger;
-    IMessageTransmitter public immutable messageTransmitter;
+    MessageTransmitter public immutable messageTransmitter;
 
     uint32 public immutable domainNumber;
     bytes32 public immutable domainRecipient;
@@ -38,7 +38,9 @@ contract TokenMessengerWithMetadata {
     ) {
         require(_tokenMessenger != address(0), "TokenMessenger not set");
         tokenMessenger = TokenMessenger(_tokenMessenger);
-        messageTransmitter = tokenMessenger.localMessageTransmitter();
+        messageTransmitter = MessageTransmitter(
+            address(tokenMessenger.localMessageTransmitter())
+        );
 
         domainNumber = _domainNumber;
         domainRecipient = _domainRecipient;
@@ -49,6 +51,7 @@ contract TokenMessengerWithMetadata {
      * @notice Wrapper function for "depositForBurn" that includes metadata.
      * Emits a `DepositForBurnMetadata` event.
      * @param channel channel id to be used when ibc forwarding
+     * @param destinationBech32Prefix bech32 prefix used for address encoding once ibc forwarded
      * @param destinationRecipient address of recipient once ibc forwarded
      * @param amount amount of tokens to burn
      * @param mintRecipient address of mint recipient on destination domain
@@ -58,14 +61,23 @@ contract TokenMessengerWithMetadata {
      */
     function depositForBurn(
         uint64 channel,
+        bytes32 destinationBech32Prefix,
         bytes32 destinationRecipient,
         uint256 amount,
         bytes32 mintRecipient,
         address burnToken,
         bytes calldata memo
     ) external returns (uint64 nonce) {
-        bytes memory metadata =
-            abi.encodePacked(channel, destinationRecipient, memo);
+        uint64 reservedNonce = messageTransmitter.nextAvailableNonce();
+        bytes32 sender = Message.addressToBytes32(msg.sender);
+        bytes memory metadata = abi.encodePacked(
+            reservedNonce,
+            sender,
+            channel,
+            destinationBech32Prefix,
+            destinationRecipient,
+            memo
+        );
 
         return rawDepositForBurn(amount, mintRecipient, burnToken, metadata);
     }
@@ -93,10 +105,8 @@ contract TokenMessengerWithMetadata {
             amount, domainNumber, mintRecipient, burnToken
         );
 
-        bytes32 sender = Message.addressToBytes32(msg.sender);
-        bytes memory message = abi.encodePacked(nonce, sender, metadata);
         uint64 metadataNonce = messageTransmitter.sendMessage(
-            domainNumber, domainRecipient, message
+            domainNumber, domainRecipient, metadata
         );
 
         emit DepositForBurnMetadata(nonce, metadataNonce, metadata);
@@ -106,6 +116,7 @@ contract TokenMessengerWithMetadata {
      * @notice Wrapper function for "depositForBurnWithCaller" that includes metadata.
      * Emits a `DepositForBurnMetadata` event.
      * @param channel channel id to be used when ibc forwarding
+     * @param destinationBech32Prefix bech32 prefix used for address encoding once ibc forwarded
      * @param destinationRecipient address of recipient once ibc forwarded
      * @param amount amount of tokens to burn
      * @param mintRecipient address of mint recipient on destination domain
@@ -116,6 +127,7 @@ contract TokenMessengerWithMetadata {
      */
     function depositForBurnWithCaller(
         uint64 channel,
+        bytes32 destinationBech32Prefix,
         bytes32 destinationRecipient,
         uint256 amount,
         bytes32 mintRecipient,
@@ -123,8 +135,16 @@ contract TokenMessengerWithMetadata {
         bytes32 destinationCaller,
         bytes calldata memo
     ) external returns (uint64 nonce) {
-        bytes memory metadata =
-            abi.encodePacked(channel, destinationRecipient, memo);
+        uint64 reservedNonce = messageTransmitter.nextAvailableNonce();
+        bytes32 sender = Message.addressToBytes32(msg.sender);
+        bytes memory metadata = abi.encodePacked(
+            reservedNonce,
+            sender,
+            channel,
+            destinationBech32Prefix,
+            destinationRecipient,
+            memo
+        );
 
         return rawDepositForBurnWithCaller(
             amount, mintRecipient, burnToken, destinationCaller, metadata
@@ -156,10 +176,8 @@ contract TokenMessengerWithMetadata {
             amount, domainNumber, mintRecipient, burnToken, destinationCaller
         );
 
-        bytes32 sender = Message.addressToBytes32(msg.sender);
-        bytes memory message = abi.encodePacked(nonce, sender, metadata);
         uint64 metadataNonce = messageTransmitter.sendMessageWithCaller(
-            domainNumber, domainRecipient, destinationCaller, message
+            domainNumber, domainRecipient, destinationCaller, metadata
         );
 
         emit DepositForBurnMetadata(nonce, metadataNonce, metadata);
