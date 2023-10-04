@@ -78,7 +78,7 @@ contract TokenMessengerWithMetadataTest is Test, TestUtils {
         vm.assume(_mintRecipient != address(0));
         bytes32 _mintRecipientRaw = Message.addressToBytes32(_mintRecipient);
 
-        bytes memory metadata = "";
+        bytes memory memo = "";
 
         //
         token.mint(owner, _amount * 2);
@@ -88,8 +88,14 @@ contract TokenMessengerWithMetadataTest is Test, TestUtils {
 
         //
         vm.prank(owner);
-        tokenMessengerWrapper.rawDepositForBurn(
-            _amount, _mintRecipientRaw, address(token), metadata
+        tokenMessengerWrapper.depositForBurn(
+            20,
+            0x0000000000000000000000000000000000000000000000000000000064796478,
+            _mintRecipientRaw,
+            _amount,
+            _mintRecipientRaw,
+            address(token),
+            memo
         );
     }
 
@@ -102,7 +108,7 @@ contract TokenMessengerWithMetadataTest is Test, TestUtils {
         vm.assume(_mintRecipient != address(0));
         bytes32 _mintRecipientRaw = Message.addressToBytes32(_mintRecipient);
 
-        bytes memory metadata = "";
+        bytes memory memo = "";
 
         //
         token.mint(owner, _amount * 2);
@@ -112,12 +118,15 @@ contract TokenMessengerWithMetadataTest is Test, TestUtils {
 
         //
         vm.prank(owner);
-        tokenMessengerWrapper.rawDepositForBurnWithCaller(
+        tokenMessengerWrapper.depositForBurnWithCaller(
+            20,
+            0x0000000000000000000000000000000000000000000000000000000064796478,
+            _mintRecipientRaw,
             _amount,
             _mintRecipientRaw,
             address(token),
             destinationCaller,
-            metadata
+            memo
         );
     }
 }
